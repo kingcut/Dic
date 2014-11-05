@@ -21,7 +21,7 @@ public final class MasterDatabaseUtil {
     ////////////////////////////////////////////////////////////////////////////
     // staticフィールド
     ////////////////////////////////////////////////////////////////////////////
-	private static final String NAME_DATA_FROM_ASSET = "notes-db";
+	private static final String NAME_DATA_FROM_ASSET = "DicData.db";
     /** DBファイルはデフォルト位置に存在する */
     public static final int DB_PATH_DEFAULT = 0;
     /** DBファイルは代替位置に存在する */

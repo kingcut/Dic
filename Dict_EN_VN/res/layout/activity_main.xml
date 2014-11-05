@@ -15,28 +15,54 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10" />
-
+		<Spinner
+            android:id="@+id/main_type_dic_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
         <Button
             android:id="@+id/main_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="Add" />
         <Button
             android:id="@+id/main_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="Edit" />
     </LinearLayout>
-
-    <RelativeLayout
+	<RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-        <TextView
-            android:id="@+id/main_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-             />
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal" 
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Study" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Update" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Config" />
+
+    </LinearLayout>
 
         <ListView
             android:id="@+id/main_lst"

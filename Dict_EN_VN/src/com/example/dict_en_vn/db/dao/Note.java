@@ -10,9 +10,13 @@ public class Note implements Serializable{
 
     private Long id;
     /** Not-null value. */
-    private String text;
-    private String comment;
-    private java.util.Date date;
+    private String word;
+    private String content;
+    private String pronunciation;
+    private String voice;
+    private String unsign_vn;
+    private Long story;
+    private Long family;
 
     public Note() {
     }
@@ -21,11 +25,15 @@ public class Note implements Serializable{
         this.id = id;
     }
 
-    public Note(Long id, String text, String comment, java.util.Date date) {
+    public Note(Long id, String word, String content,String pronunciation, String voice, String unsign, Long story, Long family) {
         this.id = id;
-        this.text = text;
-        this.comment = comment;
-        this.date = date;
+        this.word = word;
+        this.content = content;
+        this.pronunciation = pronunciation;
+        this.voice = voice;
+        this.unsign_vn = unsign;
+        this.story = story;
+        this.family = family;
     }
 
     public Long getId() {
@@ -36,30 +44,61 @@ public class Note implements Serializable{
         this.id = id;
     }
 
-    /** Not-null value. */
-    public String getText() {
-        return text;
-    }
+	public String getWord() {
+		return word;
+	}
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setText(String text) {
-        this.text = text;
-    }
+	public void setWord(String word) {
+		this.word = word;
+	}
+	public String getContent() {
+		return content;
+	}
+	
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-    public String getComment() {
-        return comment;
-    }
+	public String getPronunciation() {
+		return pronunciation;
+	}
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+	public void setPronunciation(String pronunciation) {
+		this.pronunciation = pronunciation;
+	}
 
-    public java.util.Date getDate() {
-        return date;
-    }
+	public String getVoice() {
+		return voice;
+	}
 
-    public void setDate(java.util.Date date) {
-        this.date = date;
-    }
+	public void setVoice(String voice) {
+		this.voice = voice;
+	}
+
+	public String getUnsign_vn() {
+		return unsign_vn;
+	}
+
+	public void setUnsign_vn(String unsign_vn) {
+		this.unsign_vn = unsign_vn;
+	}
+
+	public Long getStory() {
+		return story;
+	}
+
+	public void setStory(Long story) {
+		this.story = story;
+	}
+
+	public Long getFamily() {
+		return family;
+	}
+
+	public void setFamily(Long family) {
+		this.family = family;
+	}
+
+    
 
 }

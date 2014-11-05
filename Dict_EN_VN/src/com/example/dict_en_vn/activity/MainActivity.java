@@ -1,5 +1,8 @@
 package com.example.dict_en_vn.activity;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -18,36 +21,45 @@ import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.dict_en_vn.ConfigLib;
 import com.example.dict_en_vn.ConstantKey;
 import com.example.dict_en_vn.R;
 import com.example.dict_en_vn.Utils.MasterDatabaseUtil;
 import com.example.dict_en_vn.Utils.PreferenceUtil;
+import com.example.dict_en_vn.Utils.Utility;
 import com.example.dict_en_vn.activity.adapter.SearchResultAdapter;
 import com.example.dict_en_vn.db.dao.DaoMaster;
 import com.example.dict_en_vn.db.dao.DaoMaster.DevOpenHelper;
 import com.example.dict_en_vn.db.dao.DaoSession;
 import com.example.dict_en_vn.db.dao.Note;
 import com.example.dict_en_vn.db.dao.NoteDao;
+import com.example.dict_en_vn.db.dao.VN_ENDao;
+import com.example.dict_en_vn.task.UnzipTask;
 
 public class MainActivity extends FragmentActivity implements OnClickListener, OnFocusChangeListener, OnItemClickListener{
 	private ProgressDialog progress;
 	private EditText mSearchEdt;
 	private String textInput;
-	private TextView mContentTxt;
 	private SearchDataAsyTask mSearchDataAsyTask;
 	private DaoMaster daoMaster;
     private DaoSession daoSession;
     private NoteDao noteDao;
+    private VN_ENDao vn_ENDao;
     private SQLiteDatabase mDb;
+    private Spinner mSpinner;
     private Cursor cursor;
     private SearchResultAdapter mAdapter;
     private Note mNoteSelection;
+    boolean isEN_VN = true;
+    private static final long SIZE_DATA_EXTERNAL = 215000000;
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
@@ -57,9 +69,11 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 		progress.setCanceledOnTouchOutside(false);
 		progress.setCancelable(false);
 		mSearchEdt = (EditText) findViewById(R.id.main_edt);
-		mContentTxt = (TextView) findViewById(R.id.main_content);
 		findViewById(R.id.main_add).setOnClickListener(this);
 		findViewById(R.id.main_edit).setOnClickListener(this);
+		mSpinner = (Spinner) findViewById(R.id.main_type_dic_spinner);
+		setupSpinner();
+//		startFirst();
 		if (!PreferenceUtil.getBoolean(this, PreferenceUtil.COPY_DATA)) {
 			new MoveFileToSDCard().execute();
 		}else {
@@ -67,20 +81,53 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 		}
 		
 	}
+	private void setupSpinner(){
+		List<String> list = Arrays.asList(getResources().getStringArray(R.array.type_arrays));
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+			android.R.layout.simple_spinner_item, list);
+		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mSpinner.setAdapter(dataAdapter);
+		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				if (arg2 == 0) {
+					isEN_VN = true;
+				} else {
+					isEN_VN = false;
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+	}
 	private void init(){
 		mSearchEdt.addTextChangedListener(textWatcher);
 		mSearchEdt.setOnFocusChangeListener(MainActivity.this);
 		mSearchEdt.clearFocus();
-		DevOpenHelper helper = new DaoMaster.DevOpenHelper(MainActivity.this, "notes-db", null);
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(MainActivity.this, ConstantKey.DATABASE_NAME, null);
         mDb = helper.getWritableDatabase();
         daoMaster = new DaoMaster(mDb);
         daoSession = daoMaster.newSession();
-        noteDao = daoSession.getNoteDao();
+        noteDao = daoSession.getEN_VNDao();
+        vn_ENDao = daoSession.getVN_ENDao();
         mAdapter = new SearchResultAdapter(MainActivity.this);
         ListView listView = (ListView) findViewById(R.id.main_lst);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(this);
 	}
+//	private void getDao(int dao){
+//		if (dao == 0) {
+//			
+//		} else {
+//
+//		}
+//	}
 	private void dialogAddWord(){
 		// Creating alert Dialog with one Button
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
@@ -148,7 +195,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 			dialogAddWord();
 			break;
 		case R.id.main_edit:
-			editVocablary(mNoteSelection.getText());
+			editVocablary(mNoteSelection.getWord());
 			break;
 
 		default:
@@ -158,16 +205,18 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		mNoteSelection = mAdapter.getListItem().get(arg2);
-		mContentTxt.setText(mNoteSelection.getText() + "\n" +mNoteSelection.getComment());
 		mAdapter.getListItem().clear();
 		mAdapter.notifyDataSetChanged();
+		Intent intent = new Intent(this, DetailActivity.class);
+		intent.putExtra(ConstantKey.INTENT_DETAIL_WORD, mNoteSelection);
+		intent.putExtra(ConstantKey.INTENT_DETAIL_TYPE_DIC, isEN_VN);
+		startActivity(intent);
 	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
 		if (resultCode == RESULT_OK && mNoteSelection != null) {
 			mNoteSelection = noteDao.getDataWithID(mDb, mNoteSelection.getId());
-			mContentTxt.setText(mNoteSelection.getText() + "\n" +mNoteSelection.getComment());
 		}
 	}
 	@Override
@@ -190,6 +239,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 					}
 					mSearchDataAsyTask = new SearchDataAsyTask(textInput,mDb);
 					mSearchDataAsyTask.execute();
+				}else {
+					mAdapter.getListItem().clear();
+					mAdapter.notifyDataSetChanged();
 				}
 				
 		}
@@ -214,6 +266,9 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 				}
 				mSearchDataAsyTask = new SearchDataAsyTask(textInput, mDb);
 				mSearchDataAsyTask.execute();
+			}else {
+				mAdapter.getListItem().clear();
+				mAdapter.notifyDataSetChanged();
 			}
 		}
 	}
@@ -226,7 +281,12 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 		}
 		@Override
 		protected List<Note> doInBackground(String... arg0) {
-			return noteDao.getListLimit(db, input);
+			if (isEN_VN) {
+				return noteDao.getListLimit(db, input);
+			}else {
+				return vn_ENDao.getListLimit(db, input);
+			}
+			
 		}
 		@Override
 		protected void onPostExecute(List<Note> result) {
@@ -259,4 +319,34 @@ public class MainActivity extends FragmentActivity implements OnClickListener, O
 			
 		}
 	}
+	private void startFirst() {
+//		boolean restoredText =  getPreferences(MODE_PRIVATE).getBoolean(ConfigLib.KEY_START_FIRST, true); 
+//		boolean restoredTextV2 =  getPreferences(MODE_PRIVATE).getBoolean(ConfigLib.KEY_START_FIRST_V2, true); 
+//		if (!restoredTextV2) {
+			checkUnZip();
+//		}
+		
+	}
+	private void openDialogFullStorage() {
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setMessage("full memory"); 
+		alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				dialog.dismiss();
+				dialog.cancel();
+			}
+		});
+		AlertDialog alertDialog = alert.create();
+		alertDialog.show();
+	}
+	 private void checkUnZip()
+	    {
+		 if (Utility.getAvailableExternalMemorySize() < SIZE_DATA_EXTERNAL) {
+				openDialogFullStorage();
+			}else {
+				if (!new File(ConfigLib.SDCARD_FOLDER +ConfigLib.ASSETS_DATA+"/"+ConfigLib.DIC_NAME+ConfigLib.DATABASE_TYPE_FILE).exists()) {
+					new UnzipTask(this, ConfigLib.ASSETS_DATA + ConfigLib.DIC_TYPE_FILE).execute();
+				}
+			}
+	    }
 }

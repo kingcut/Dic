@@ -31,17 +31,17 @@ public class AddVocabularyActivity extends FragmentActivity implements OnClickLi
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_add_vocabulary);
-		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "notes-db", null);
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ConstantKey.DATABASE_NAME, null);
         mDb = helper.getWritableDatabase();
         daoMaster = new DaoMaster(mDb);
         daoSession = daoMaster.newSession();
-        noteDao = daoSession.getNoteDao();
+        noteDao = daoSession.getEN_VNDao();
 		Bundle bundle = getIntent().getExtras();
 		
 		String text = bundle.getString(ConstantKey.INTENT_ADD_VOCABULARY);
-		note = noteDao.getDataWithValue(mDb, NoteDao.Properties.Text.columnName, text);
+		note = noteDao.getDataWithValue(mDb, NoteDao.Properties.Word.columnName, text);
 		if (note == null) {
-			note = new Note(null, text, null, null);
+			note = new Note(null, text, null, null, null, null, null,null);
 		}
 //		isAdd = bundle.getBoolean(ConstantKey.INTENT_IS_ADD);
 		Button button = (Button) findViewById(R.id.add_ok);
@@ -53,24 +53,24 @@ public class AddVocabularyActivity extends FragmentActivity implements OnClickLi
 //		}
 		mEdtWord = (EditText) findViewById(R.id.add_vocabulary_word);
 		mEdtContent = (EditText) findViewById(R.id.add_vocabulary_content);
-		if (note.getText() != null) {
-			mEdtWord.setText(note.getText());
+		if (note.getWord() != null) {
+			mEdtWord.setText(note.getWord());
 		}
-		if (note.getComment() != null) {
-			mEdtContent.setText(note.getComment());
+		if (note.getContent() != null) {
+			mEdtContent.setText(note.getContent());
 		}
 	}
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.add_ok:
-			Note temp = new Note(null, mEdtWord.getText().toString(), mEdtContent.getText().toString(), null);
-			note = noteDao.getDataWithValue(mDb, NoteDao.Properties.Text.columnName, temp.getText());
+			Note temp = new Note((long)5, mEdtWord.getText().toString(), mEdtContent.getText().toString(), "a", "b", "c", (long)1,(long) 1);
+			note = noteDao.getDataWithValue(mDb, NoteDao.Properties.Word.columnName, temp.getWord());
 			if (note == null) {
 				note = temp;
 				noteDao.insert(note);
 			} else {
-				note.setComment(temp.getComment());
+				note.setContent(temp.getContent());
 				noteDao.update(note);
 			}
 			Bundle bundle = new Bundle();

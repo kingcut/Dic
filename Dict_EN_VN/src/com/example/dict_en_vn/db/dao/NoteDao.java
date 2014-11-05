@@ -16,17 +16,21 @@ import de.greenrobot.dao.internal.DaoConfig;
 */
 public class NoteDao extends AbstractDao<Note, Long> {
 
-    public static final String TABLENAME = "NOTE";
+    public static final String TABLENAME = "EN - VN";
 
     /**
      * Properties of entity Note.<br/>
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property Text = new Property(1, String.class, "text", false, "TEXT");
-        public final static Property Comment = new Property(2, String.class, "comment", false, "COMMENT");
-        public final static Property Date = new Property(3, java.util.Date.class, "date", false, "DATE");
+        public final static Property Id = new Property(0, Long.class, "id", true, "id");
+        public final static Property Word = new Property(1, String.class, "word", false, "word");
+        public final static Property Content = new Property(2, String.class, "content", false, "content");
+        public final static Property Pronunciation = new Property(3, String.class, "pronunciation", false, "pronunciation");
+        public final static Property Voice = new Property(4, String.class, "voice", false, "voice");
+        public final static Property Unsign = new Property(5, String.class, "unsign_vn", false, "unsign_vn");
+        public final static Property Story = new Property(6, Long.class, "story", false, "story");
+        public final static Property Family = new Property(7, Long.class, "family", false, "family");
     };
 
 
@@ -38,9 +42,9 @@ public class NoteDao extends AbstractDao<Note, Long> {
         super(config, daoSession);
     }
     public List<Note> getListLimit(SQLiteDatabase db, String search){
-    	String textColumn = NoteDao.Properties.Text.columnName;
+    	String textColumn = NoteDao.Properties.Word.columnName;
 		 String orderBy = textColumn + " COLLATE LOCALIZED ASC";
-		 String sqlStr = "select * from " + "'"+getTablename()+"'"+" WHERE  "+NoteDao.Properties.Text.columnName+" >= '"+search+"' order by "+NoteDao.Properties.Text.columnName+" ASC LIMIT 0,20 ";
+		 String sqlStr = "select * from " + "'"+getTablename()+"'"+" WHERE  "+NoteDao.Properties.Word.columnName+" like '"+search+"%' order by "+NoteDao.Properties.Word.columnName+" ASC LIMIT 0,5 ";
 		 Cursor cursor = db.rawQuery(sqlStr, null);
 //		 Cursor cursor = db.query(getTablename(), getAllColumns(), null, null, null, null, orderBy);
     	List<Note> data = new ArrayList<Note>();
@@ -98,17 +102,19 @@ public class NoteDao extends AbstractDao<Note, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindString(2, entity.getText());
+        stmt.bindString(2, entity.getWord());
  
-        String comment = entity.getComment();
+        String comment = entity.getContent();
         if (comment != null) {
             stmt.bindString(3, comment);
         }
- 
-        java.util.Date date = entity.getDate();
-        if (date != null) {
-            stmt.bindLong(4, date.getTime());
-        }
+        stmt.bindString(4, entity.getPronunciation());
+        stmt.bindString(5, entity.getVoice());
+        stmt.bindString(6, entity.getUnsign_vn());
+        long story = entity.getStory();
+        stmt.bindLong(7, story);
+        long family = entity.getFamily();
+        stmt.bindLong(8, family);
     }
 
     /** @inheritdoc */
@@ -124,7 +130,11 @@ public class NoteDao extends AbstractDao<Note, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // text
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // comment
-            cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)) // date
+    		cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // comment
+			cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // comment
+			cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // comment
+            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6), // date
+    		cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7) // date
         );
         return entity;
     }
@@ -133,9 +143,13 @@ public class NoteDao extends AbstractDao<Note, Long> {
     @Override
     public void readEntity(Cursor cursor, Note entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setText(cursor.getString(offset + 1));
-        entity.setComment(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setDate(cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)));
+        entity.setWord(cursor.getString(offset + 1));
+        entity.setContent(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setPronunciation(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setVoice(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setUnsign_vn(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setStory(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
+        entity.setFamily(cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7));
      }
     
     /** @inheritdoc */

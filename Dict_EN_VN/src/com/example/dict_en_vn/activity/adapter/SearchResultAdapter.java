@@ -47,8 +47,8 @@ public class SearchResultAdapter extends BaseAdapter{
 		} else {
 			holder = (Holder) view.getTag();
 		}
-		holder.word.setText(note.getText());
-		holder.content.setText(note.getComment());
+		holder.word.setText(note.getWord());
+		holder.content.setText(note.getContent());
 		return view;
 	}
 	class Holder {
